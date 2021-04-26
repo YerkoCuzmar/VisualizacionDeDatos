@@ -1,0 +1,261 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 10, bottom: 10, left: 10},
+  width = 600 - margin.left - margin.right,
+  height = 600 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+.append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+
+data = {
+    "children": [
+      {
+        "name": "Oscars",
+        "children": [
+          {
+            "name": "Titanic",
+            "group": "A",
+            "value": 11,
+            "colname": "level3"
+          },
+          {
+            "name": "LOTR 3",
+            "group": "A",
+            "value": 11,
+            "colname": "level3"
+          },
+          {
+            "name": "Avatar",
+            "group": "C",
+            "value": 3,
+            "colname": "level3"
+          },
+        ],
+        "colname": "level2"
+      },
+      {
+        "name": "Golden Globes",
+        "children": [
+          {
+            "name": "Titanic",
+            "group": "C",
+            "value": 4,
+            "colname": "level3"
+          },
+          {
+            "name": "LOTR 3",
+            "group": "A",
+            "value": 4,
+            "colname": "level3"
+          },
+          {
+            "name": "Avatar",
+            "group": "B",
+            "value": 2,
+            "colname": "level3"
+          }
+        ],
+        "colname": "level2"
+      },
+      {
+        "name": "BAFTA",
+        "children": [
+          {
+            "name": "Titanic",
+            "group": "B",
+            "value": 0,
+            "colname": "level3"
+          },
+          {
+            "name": "LOTR 3",
+            "group": "A",
+            "value": 5,
+            "colname": "level3"
+          },
+          {
+            "name": "Avatar",
+            "group": "A",
+            "value": 2,
+            "colname": "level3"
+          },
+        ],
+        "colname": "level2"
+      }
+    ],
+    "name": "CEO"
+  }
+
+
+
+  data = {
+      "children": [
+        {
+          "name": "Titanic",
+          "children": [
+            {
+              "name": "Oscars",
+              "group": "A",
+              "value": 11,
+              "colname": "level3"
+            },
+            {
+              "name": "Golden Globes",
+              "group": "A",
+              "value": 4,
+              "colname": "level3"
+            },
+            {
+              "name": "BAFTA",
+              "group": "C",
+              "value": 0,
+              "colname": "level3"
+            },
+          ],
+          "colname": "level2"
+        },
+        {
+          "name": "LOTR 3",
+          "children": [
+            {
+              "name": "Oscars",
+              "group": "C",
+              "value": 11,
+              "colname": "level3"
+            },
+            {
+              "name": "Golden G.",
+              "group": "A",
+              "value": 4,
+              "colname": "level3"
+            },
+            {
+              "name": "BAFTA",
+              "group": "B",
+              "value": 5,
+              "colname": "level3"
+            }
+          ],
+          "colname": "level2"
+        },
+        {
+          "name": "Avatar",
+          "children": [
+            {
+              "name": "Oscars",
+              "group": "B",
+              "value": 3,
+              "colname": "level3"
+            },
+            {
+              "name": "Golden G.",
+              "group": "A",
+              "value": 2,
+              "colname": "level3"
+            },
+            {
+              "name": "BAFTA",
+              "group": "A",
+              "value": 2,
+              "colname": "level3"
+            },
+          ],
+          "colname": "level2"
+        }
+      ],
+      "name": "CEO"
+    }
+
+
+  
+  // Give the data to this cluster layout:
+  var root = d3.hierarchy(data).sum(function(d){ return d.value}) // Here the size of each leave is given in the 'value' field in input data
+
+  // Then d3.treemap computes the position of each element of the hierarchy
+  d3.treemap()
+    .size([width, height])
+    .paddingTop(28)
+    .paddingRight(7)
+    .paddingInner(3)      // Padding between each rectangle
+    //.paddingOuter(6)
+    //.padding(20)
+    (root)
+
+  // prepare a color scale
+  var color = d3.scaleOrdinal()
+    .domain(["titanic", "lotr", "avatar"])
+    .range([ "#EAA76F", "#E7D90D", "#1B7BDB"])
+
+  // And a opacity scale
+  var opacity = d3.scaleLinear()
+    .domain([10, 30])
+    .range([.5,1])
+
+  // use this information to add rectangles:
+  svg
+    .selectAll("rect")
+    .data(root.leaves())
+    .enter()
+    .append("rect")
+      .attr('x', function (d) { return d.x0; })
+      .attr('y', function (d) { return d.y0; })
+      .attr('width', function (d) { return d.x1 - d.x0; })
+      .attr('height', function (d) { return d.y1 - d.y0; })
+      .style("stroke", "black")
+      .style("fill", function(d){ return color(d.parent.data.name)} )
+      //.style("opacity", function(d){ return opacity(d.data.value)})
+
+  // and to add the text labels
+  svg
+    .selectAll("text")
+    .data(root.leaves())
+    .enter()
+    .append("text")
+      .attr("x", function(d){ return d.x0+5})    // +10 to adjust position (more right)
+      .attr("y", function(d){ return d.y0+20})    // +20 to adjust position (lower)
+      .text(function(d){ return (d.data.value > 0) ?  d.data.name : "" })
+      .attr("font-size", "19px")
+      .attr("fill", "white")
+
+  // and to add the text labels
+  svg
+    .selectAll("vals")
+    .data(root.leaves())
+    .enter()
+    .append("text")
+      .attr("x", function(d){ return d.x0+5})    // +10 to adjust position (more right)
+      .attr("y", function(d){ return d.y0+35})    // +20 to adjust position (lower)
+      .text(function(d){ return (d.data.value > 0) ? d.data.value : null })
+      .attr("font-size", "16px")
+      .attr("fill", "white")
+
+  // Add title for the 3 groups
+  svg
+    .selectAll("titles")
+    .data(root.descendants().filter(function(d){return d.depth==1}))
+    .enter()
+    .append("text")
+      .attr("x", function(d){ return d.x0})
+      .attr("y", function(d){ return d.y0+21})
+      .text(function(d){ return d.data.name })
+      .attr("font-size", "19px")
+      .attr("fill",  function(d){ return color(d.data.name)} )
+</script>
